@@ -109,7 +109,7 @@ namespace Castle.DynamicProxy
 		{
 			if (checkType != type)
 			{
-				throw new AccessViolationException();
+				throw new ArgumentException($"The reference type {type.FullName} does not match the expected type {checkType.FullName}");
 			}
 
 			return GetPtrNocheck();
@@ -121,7 +121,7 @@ namespace Castle.DynamicProxy
 
 			if (ptr == null)
 			{
-				throw new AccessViolationException();
+				throw new ObjectDisposedException("This reference was already invalidated");
 			}
 
 			return ptr;
@@ -138,7 +138,7 @@ namespace Castle.DynamicProxy
 
 			if (ptr == null || checkPtr != ptr)
 			{
-				throw new AccessViolationException();
+				throw new InvalidOperationException($"BUG: Pointer mismatch on reference invalidation. Expected: {(nint)checkPtr:X16}, Actual: {(nint)ptr:X16}");
 			}
 		}
 	}

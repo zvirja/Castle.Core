@@ -56,7 +56,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		{
 			ReadOnlySpan<char> local = default;
 			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
-			Assert.Throws<AccessViolationException>(() =>
+			Assert.Throws<InvalidOperationException>(() =>
 			{
 				ReadOnlySpan<char> otherLocal = default;
 				reference.Invalidate(&otherLocal);
@@ -76,7 +76,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		{
 			ReadOnlySpan<char> local = default;
 			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
-			Assert.Throws<AccessViolationException>(() => reference.GetPtr(typeof(bool)));
+			Assert.Throws<ArgumentException>(() => reference.GetPtr(typeof(bool)));
 		}
 
 		[Test]
@@ -94,7 +94,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 			ReadOnlySpan<char> local = default;
 			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
 			reference.Invalidate(&local);
-			Assert.Throws<AccessViolationException>(() => reference.GetPtr(typeof(ReadOnlySpan<char>)));
+			Assert.Throws<ObjectDisposedException>(() => reference.GetPtr(typeof(ReadOnlySpan<char>)));
 		}
 
 		#endregion
