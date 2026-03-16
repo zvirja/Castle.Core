@@ -20,6 +20,7 @@
 namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 {
 	using System;
+	using System.Threading.Tasks;
 #if NET9_0_OR_GREATER
 	using System.Runtime.CompilerServices;
 #endif
@@ -70,6 +71,17 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
 			reference.Invalidate(&local);
 		}
+		
+		[Test]
+		public unsafe void Invalidate_throws_when_access_from_other_thread()
+		{
+			ReadOnlySpan<char> local = default;
+			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
+			var address = reference.GetPtr(typeof(ReadOnlySpan<char>));
+			var task = Task.Run(() => reference.Invalidate(address));
+			var msg = Assert.Throws<InvalidOperationException>(() => task.GetAwaiter().GetResult()).Message;
+			StringAssert.Contains("thread", msg);
+		}
 
 		[Test]
 		public unsafe void GetPtr_throws_if_type_mismatch()
@@ -95,6 +107,16 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
 			reference.Invalidate(&local);
 			Assert.Throws<ObjectDisposedException>(() => reference.GetPtr(typeof(ReadOnlySpan<char>)));
+		}
+		
+		[Test]
+		public unsafe void GetPtr_throws_when_access_from_other_thread()
+		{
+			ReadOnlySpan<char> local = default;
+			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
+			var task = Task.Run(() => reference.GetPtr(typeof(ReadOnlySpan<char>)));
+			var msg = Assert.Throws<InvalidOperationException>(() => task.GetAwaiter().GetResult()).Message;
+			StringAssert.Contains("thread", msg);
 		}
 
 		#endregion
@@ -137,6 +159,16 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 			var reference = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<char>), &local);
 			reference.Value = "bar".AsSpan();
 			Assert.True(local == "bar".AsSpan());
+		}
+		
+		[Test]
+		public unsafe void ReadOnlySpanReference_Value_throws_when_access_from_other_thread()
+		{
+			ReadOnlySpan<char> local = "foo".AsSpan();
+			var reference = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<char>), &local);
+			var task = Task.Run(() => reference.Value.ToString());
+			var msg = Assert.Throws<InvalidOperationException>(() => task.GetAwaiter().GetResult()).Message;
+			StringAssert.Contains("thread", msg);
 		}
 
 		#endregion

@@ -59,9 +59,7 @@ namespace Castle.DynamicProxy
 	//        never during the whole method see the local/parameter as "no longer in use". (This may be a little
 	//        paranoid, since the CoreCLR JIT probably exempts so-called "address-exposed" locals from reuse anyway.)
 	//
-	// *) Finally, we only ever access the unmanaged pointer field through `Volatile` or `Interlocked` to better guard
-	//    against cases where someone foolishly copied a `ByRefLikeReference` instance out of the `IInvocation.Arguments`
-	//    and uses it from another thread.
+	// *) Finally, we allow accessing reference data from the owning thread only to avoid all possible concurrency-related issues.
 	//
 	// As far as I can reason, `ByRefLikeReference` et al. should be safe to use IFF they are never copied out from an
 	// `IInvocation`, and IFF DynamicProxy succeeds in destructing them and erasing them from the `IInvocation` right
@@ -77,7 +75,9 @@ namespace Castle.DynamicProxy
 		private readonly Type type;
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		private nint ptr;
+		private void* ptr;
+
+		private Thread ownerThread;
 
 		/// <summary>
 		///   Do not use! This constructor should only be called by DynamicProxy internals.
@@ -97,7 +97,8 @@ namespace Castle.DynamicProxy
 			}
 
 			this.type = type;
-			this.ptr = (nint)ptr;
+			this.ptr = ptr;
+			this.ownerThread = Thread.CurrentThread;
 		}
 
 		/// <summary>
@@ -107,6 +108,8 @@ namespace Castle.DynamicProxy
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void* GetPtr(Type checkType)
 		{
+			AssertCurrentThread();
+			
 			if (checkType != type)
 			{
 				throw new ArgumentException($"The reference type {type.FullName} does not match the expected type {checkType.FullName}");
@@ -117,14 +120,14 @@ namespace Castle.DynamicProxy
 
 		internal void* GetPtrNocheck()
 		{
-			var ptr = (void*)Volatile.Read(ref this.ptr);
-
-			if (ptr == null)
+			AssertCurrentThread();
+			
+			if (this.ptr == null)
 			{
 				throw new ObjectDisposedException("This reference was already invalidated");
 			}
-
-			return ptr;
+			
+			return this.ptr;
 		}
 
 		/// <summary>
@@ -134,11 +137,21 @@ namespace Castle.DynamicProxy
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void Invalidate(void* checkPtr)
 		{
-			var ptr = (void*)Interlocked.CompareExchange(ref this.ptr, (nint)null, (nint)checkPtr);
-
-			if (ptr == null || checkPtr != ptr)
+			AssertCurrentThread();
+			
+			if (this.ptr == null || this.ptr != checkPtr)
 			{
-				throw new InvalidOperationException($"BUG: Pointer mismatch on reference invalidation. Expected: {(nint)checkPtr:X16}, Actual: {(nint)ptr:X16}");
+				throw new InvalidOperationException($"BUG: Pointer mismatch on reference invalidation. Expected: {(nint)checkPtr:X16}, Actual: {(nint)this.ptr:X16}");
+			}
+
+			this.ptr = null;
+		}
+
+		private void AssertCurrentThread()
+		{
+			if (this.ownerThread != Thread.CurrentThread)
+			{
+				throw new InvalidOperationException("This reference cannot be used from another thread");
 			}
 		}
 	}
