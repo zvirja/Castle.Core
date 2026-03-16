@@ -41,7 +41,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 			Assert.Throws<ArgumentOutOfRangeException>(() =>
 			{
 				bool local = default;
-				_ = new ByRefLikeReference(typeof(bool), &local);
+				_ = new ByRefLikeReference(typeof(bool), &local, false);
 			});
 		}
 
@@ -49,14 +49,24 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		public unsafe void Ctor_succeeds_if_by_ref_like_type()
 		{
 			ReadOnlySpan<char> local = default;
-			_ = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
+			_ = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
+		}
+
+		[Test]
+		[TestCase(true)]
+		[TestCase(false)]
+		public unsafe void Ctor_preserves_value_is_scoped_value(bool valueIsScoped)
+		{
+			ReadOnlySpan<char> local = default;
+			var result = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, valueIsScoped: valueIsScoped);
+			Assert.AreEqual(valueIsScoped, result.ValueIsScoped);
 		}
 
 		[Test]
 		public unsafe void Invalidate_throws_if_address_mismatch()
 		{
 			ReadOnlySpan<char> local = default;
-			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
+			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
 			Assert.Throws<InvalidOperationException>(() =>
 			{
 				ReadOnlySpan<char> otherLocal = default;
@@ -68,7 +78,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		public unsafe void Invalidate_succeeds_if_address_match()
 		{
 			ReadOnlySpan<char> local = default;
-			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
+			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
 			reference.Invalidate(&local);
 		}
 		
@@ -76,7 +86,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		public unsafe void Invalidate_throws_when_access_from_other_thread()
 		{
 			ReadOnlySpan<char> local = default;
-			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
+			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
 			var address = reference.GetPtr(typeof(ReadOnlySpan<char>));
 			var task = Task.Run(() => reference.Invalidate(address));
 			var msg = Assert.Throws<InvalidOperationException>(() => task.GetAwaiter().GetResult()).Message;
@@ -87,7 +97,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		public unsafe void GetPtr_throws_if_type_mismatch()
 		{
 			ReadOnlySpan<char> local = default;
-			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
+			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
 			Assert.Throws<ArgumentException>(() => reference.GetPtr(typeof(bool)));
 		}
 
@@ -95,7 +105,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		public unsafe void GetPtr_returns_ctor_address_if_type_match()
 		{
 			ReadOnlySpan<char> local = default;
-			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
+			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
 			var ptr = reference.GetPtr(typeof(ReadOnlySpan<char>));
 			Assert.True(ptr == &local);
 		}
@@ -104,7 +114,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		public unsafe void GetPtr_throws_after_Invalidate()
 		{
 			ReadOnlySpan<char> local = default;
-			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
+			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
 			reference.Invalidate(&local);
 			Assert.Throws<ObjectDisposedException>(() => reference.GetPtr(typeof(ReadOnlySpan<char>)));
 		}
@@ -113,7 +123,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		public unsafe void GetPtr_throws_when_access_from_other_thread()
 		{
 			ReadOnlySpan<char> local = default;
-			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local);
+			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
 			var task = Task.Run(() => reference.GetPtr(typeof(ReadOnlySpan<char>)));
 			var msg = Assert.Throws<InvalidOperationException>(() => task.GetAwaiter().GetResult()).Message;
 			StringAssert.Contains("thread", msg);
@@ -131,14 +141,24 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 			Assert.Throws<ArgumentOutOfRangeException>(() =>
 			{
 				ReadOnlySpan<bool> local = default;
-				_ = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<bool>), &local);
+				_ = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<bool>), &local, false);
 			});
+		}
+
+		[Test]
+		[TestCase(true)]
+		[TestCase(false)]
+		public unsafe void ReadOnlySpanReference_ctor_preserves_value_is_scoped_value(bool valueIsScoped)
+		{
+			ReadOnlySpan<char> local = default;
+			var result = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<char>), &local, valueIsScoped: valueIsScoped);
+			Assert.AreEqual(valueIsScoped, result.ValueIsScoped);
 		}
 
 		public unsafe void ReadOnlySpanReference_Value_returns_equal_span()
 		{
 			ReadOnlySpan<char> local = "foo".AsSpan();
-			var reference = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<char>), &local);
+			var reference = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<char>), &local, false);
 			Assert.True(reference.Value == "foo".AsSpan());
 		}
 
@@ -147,7 +167,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		public unsafe void ReadOnlySpanReference_Value_returns_same_span()
 		{
 			ReadOnlySpan<char> local = "foo".AsSpan();
-			var reference = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<char>), &local);
+			var reference = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<char>), &local, false);
 			Assert.True(Unsafe.AreSame(ref reference.Value, ref local));
 		}
 #endif
@@ -156,7 +176,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		public unsafe void ReadOnlySpanReference_Value_can_update_original()
 		{
 			ReadOnlySpan<char> local = "foo".AsSpan();
-			var reference = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<char>), &local);
+			var reference = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<char>), &local, false);
 			reference.Value = "bar".AsSpan();
 			Assert.True(local == "bar".AsSpan());
 		}
@@ -165,7 +185,7 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		public unsafe void ReadOnlySpanReference_Value_throws_when_access_from_other_thread()
 		{
 			ReadOnlySpan<char> local = "foo".AsSpan();
-			var reference = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<char>), &local);
+			var reference = new ReadOnlySpanReference<char>(typeof(ReadOnlySpan<char>), &local, false);
 			var task = Task.Run(() => reference.Value.ToString());
 			var msg = Assert.Throws<InvalidOperationException>(() => task.GetAwaiter().GetResult()).Message;
 			StringAssert.Contains("thread", msg);

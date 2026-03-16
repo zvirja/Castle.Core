@@ -2425,7 +2425,8 @@ namespace Castle.DynamicProxy
     public class ByRefLikeReference
     {
         [System.CLSCompliant(false)]
-        public ByRefLikeReference(System.Type type, void* ptr) { }
+        public ByRefLikeReference(System.Type type, void* ptr, bool valueIsScoped) { }
+        public bool ValueIsScoped { get; }
         [System.CLSCompliant(false)]
         public unsafe void* GetPtr(System.Type checkType) { }
         [System.CLSCompliant(false)]
@@ -2435,7 +2436,7 @@ namespace Castle.DynamicProxy
         where TByRefLike :  struct
     {
         [System.CLSCompliant(false)]
-        public ByRefLikeReference(System.Type type, void* ptr) { }
+        public ByRefLikeReference(System.Type type, void* ptr, bool valueIsScoped) { }
         public TByRefLike& Value { get; }
     }
     public class CustomAttributeInfo : System.IEquatable<Castle.DynamicProxy.CustomAttributeInfo>
@@ -2719,12 +2720,12 @@ namespace Castle.DynamicProxy
     public class ReadOnlySpanReference<T> : Castle.DynamicProxy.ByRefLikeReference<System.ReadOnlySpan<T>>
     {
         [System.CLSCompliant(false)]
-        public ReadOnlySpanReference(System.Type type, void* ptr) { }
+        public ReadOnlySpanReference(System.Type type, void* ptr, bool valueIsScoped) { }
     }
     public class SpanReference<T> : Castle.DynamicProxy.ByRefLikeReference<System.Span<T>>
     {
         [System.CLSCompliant(false)]
-        public SpanReference(System.Type type, void* ptr) { }
+        public SpanReference(System.Type type, void* ptr, bool valueIsScoped) { }
     }
     public class StandardInterceptor : Castle.DynamicProxy.IInterceptor
     {

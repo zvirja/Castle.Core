@@ -59,6 +59,10 @@ namespace Castle.DynamicProxy
 	//        never during the whole method see the local/parameter as "no longer in use". (This may be a little
 	//        paranoid, since the CoreCLR JIT probably exempts so-called "address-exposed" locals from reuse anyway.)
 	//
+	// *) We track if each reference represents scoped value. Scoped values usually represent data living on stack only,
+	//    so we should apply more strict rules on how we expose the value.
+	//    Dynamic generator analyzes method signature and provides the correct value for us.
+	//
 	// *) Finally, we allow accessing reference data from the owning thread only to avoid all possible concurrency-related issues.
 	//
 	// As far as I can reason, `ByRefLikeReference` et al. should be safe to use IFF they are never copied out from an
@@ -78,13 +82,15 @@ namespace Castle.DynamicProxy
 		private void* ptr;
 
 		private Thread ownerThread;
-
+		
+		public bool ValueIsScoped { get; }
+		
 		/// <summary>
 		///   Do not use! This constructor should only be called by DynamicProxy internals.
 		/// </summary>
 		[CLSCompliant(false)]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ByRefLikeReference(Type type, void* ptr)
+		public ByRefLikeReference(Type type, void* ptr, bool valueIsScoped)
 		{
 			if (type.IsByRefLikeSafe() == false)
 			{
@@ -98,6 +104,7 @@ namespace Castle.DynamicProxy
 
 			this.type = type;
 			this.ptr = ptr;
+			this.ValueIsScoped = valueIsScoped;
 			this.ownerThread = Thread.CurrentThread;
 		}
 
@@ -180,8 +187,8 @@ namespace Castle.DynamicProxy
 		/// </summary>
 		[CLSCompliant(false)]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ByRefLikeReference(Type type, void* ptr)
-			: base(type, ptr)
+		public ByRefLikeReference(Type type, void* ptr, bool valueIsScoped)
+			: base(type, ptr, valueIsScoped)
 		{
 			if (type != typeof(TByRefLike))
 			{
@@ -225,8 +232,8 @@ namespace Castle.DynamicProxy
 		/// </summary>
 		[CLSCompliant(false)]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ReadOnlySpanReference(Type type, void* ptr)
-			: base(type, ptr)
+		public ReadOnlySpanReference(Type type, void* ptr, bool valueIsScoped)
+			: base(type, ptr, valueIsScoped)
 		{
 			if (type != typeof(ReadOnlySpan<T>))
 			{
@@ -271,8 +278,8 @@ namespace Castle.DynamicProxy
 		/// </summary>
 		[CLSCompliant(false)]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public SpanReference(Type type, void* ptr)
-			: base(type, ptr)
+		public SpanReference(Type type, void* ptr, bool valueIsScoped)
+			: base(type, ptr, valueIsScoped)
 		{
 			if (type != typeof(Span<T>))
 			{

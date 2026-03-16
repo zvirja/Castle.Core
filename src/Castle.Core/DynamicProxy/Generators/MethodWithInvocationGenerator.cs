@@ -305,13 +305,17 @@ namespace Castle.DynamicProxy.Generators
 						// Instead of them, we prepare instances of `ByRefLikeReference` wrappers that reference them.
 						var referenceCtor = GetByRefLikeReferenceCtorFor(dereferencedArgumentType);
 						var reference = method.CodeBuilder.DeclareLocal(typeof(ByRefLikeReference));
+						// Notice, if a parameter is by-ref, scoped applies to the reference - not to the value itself.
+						// We are interested only in tracking if the value is scoped.
+						var valueIsScoped = parameters[i].GetCustomAttribute<ScopedRefAttribute>() != null && !parameters[i].IsByRef;
 						method.CodeBuilder.AddStatement(
 							new AssignStatement(
 								reference,
 								new NewInstanceExpression(
 									referenceCtor,
 									new TypeTokenExpression(dereferencedArgumentType),
-									new AddressOfExpression(dereferencedArgument))));
+									new AddressOfExpression(dereferencedArgument),
+									new LiteralBoolExpression(valueIsScoped))));
 
 						dereferencedArgument = reference;
 					}
@@ -419,7 +423,9 @@ namespace Castle.DynamicProxy.Generators
 						new NewInstanceExpression(
 							referenceCtor,
 							new TypeTokenExpression(returnType),
-							new AddressOfExpression(returnValueBuffer))));
+							new AddressOfExpression(returnValueBuffer),
+							// Return values are never scoped
+							new LiteralBoolExpression(false))));
 #else
 				returnValueBuffer = null;
 #endif

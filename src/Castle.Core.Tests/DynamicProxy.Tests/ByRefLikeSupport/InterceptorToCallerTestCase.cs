@@ -85,6 +85,24 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 					((ByRefLikeReference<ByRefLike>)invocationReturnValue!).Value = returnValue;
 				});
 		}
+		
+		/// <summary>
+		/// Do not test other types, as the logic is the same there. 
+		/// </summary>
+		[Test]
+		public void ByRefLike__return_value__should_not_be_scoped()
+		{
+			InvokeProxyAndSetInvocationReturnValue(
+				invoke: (IReturnByRefLikeByValue proxy) =>
+				{
+					ByRefLike returnValue = proxy.ReturnByValue();
+				},
+				set: (object? invocationReturnValue) =>
+				{
+					Assert.IsInstanceOf<ByRefLikeReference<ByRefLike>>(invocationReturnValue);
+					Assert.AreEqual(false, ((ByRefLikeReference<ByRefLike>)invocationReturnValue).ValueIsScoped);
+				});
+		}
 
 #endif
 
