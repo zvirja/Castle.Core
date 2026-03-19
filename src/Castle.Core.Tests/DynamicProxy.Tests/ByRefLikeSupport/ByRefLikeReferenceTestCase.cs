@@ -63,32 +63,32 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		}
 
 		[Test]
-		public unsafe void Invalidate_throws_if_address_mismatch()
+		public unsafe void Dispose_throws_if_address_mismatch()
 		{
 			ReadOnlySpan<char> local = default;
 			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
 			Assert.Throws<InvalidOperationException>(() =>
 			{
 				ReadOnlySpan<char> otherLocal = default;
-				reference.Invalidate(&otherLocal);
+				reference.Dispose(&otherLocal);
 			});
 		}
 
 		[Test]
-		public unsafe void Invalidate_succeeds_if_address_match()
+		public unsafe void Dispose_succeeds_if_address_match()
 		{
 			ReadOnlySpan<char> local = default;
 			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
-			reference.Invalidate(&local);
+			reference.Dispose(&local);
 		}
 		
 		[Test]
-		public unsafe void Invalidate_throws_when_access_from_other_thread()
+		public unsafe void Dispose_throws_when_access_from_other_thread()
 		{
 			ReadOnlySpan<char> local = default;
 			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
 			var address = reference.GetPtr(typeof(ReadOnlySpan<char>));
-			var task = Task.Run(() => reference.Invalidate(address));
+			var task = Task.Run(() => reference.Dispose(address));
 			var msg = Assert.Throws<InvalidOperationException>(() => task.GetAwaiter().GetResult()).Message;
 			StringAssert.Contains("thread", msg);
 		}
@@ -111,11 +111,11 @@ namespace Castle.DynamicProxy.Tests.ByRefLikeSupport
 		}
 
 		[Test]
-		public unsafe void GetPtr_throws_after_Invalidate()
+		public unsafe void GetPtr_throws_after_Dispose()
 		{
 			ReadOnlySpan<char> local = default;
 			var reference = new ByRefLikeReference(typeof(ReadOnlySpan<char>), &local, false);
-			reference.Invalidate(&local);
+			reference.Dispose(&local);
 			Assert.Throws<ObjectDisposedException>(() => reference.GetPtr(typeof(ReadOnlySpan<char>)));
 		}
 		

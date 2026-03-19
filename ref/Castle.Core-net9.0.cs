@@ -2424,19 +2424,27 @@ namespace Castle.DynamicProxy
     }
     public class ByRefLikeReference
     {
-        [System.CLSCompliant(false)]
-        public ByRefLikeReference(System.Type type, void* ptr, bool valueIsScoped) { }
         public bool ValueIsScoped { get; }
+    }
+    public static class ByRefLikeReferenceUnsafe
+    {
         [System.CLSCompliant(false)]
-        public unsafe void* GetPtr(System.Type checkType) { }
+        public static unsafe Castle.DynamicProxy.ByRefLikeReference<TByRefLike> CreateByRefLikeReference<TByRefLike>(System.Type type, void* ptr, bool valueIsScoped)
+            where TByRefLike :  struct { }
         [System.CLSCompliant(false)]
-        public unsafe void Invalidate(void* checkPtr) { }
+        public static unsafe Castle.DynamicProxy.ByRefLikeReference CreateByRefLikeReferenceUntyped(System.Type type, void* ptr, bool valueIsScoped) { }
+        [System.CLSCompliant(false)]
+        public static unsafe Castle.DynamicProxy.ReadOnlySpanReference<T> CreateReadOnlySpanReference<T>(System.Type type, void* ptr, bool valueIsScoped) { }
+        [System.CLSCompliant(false)]
+        public static unsafe Castle.DynamicProxy.SpanReference<T> CreateSpanReference<T>(System.Type type, void* ptr, bool valueIsScoped) { }
+        [System.CLSCompliant(false)]
+        public static unsafe void DisposeReference(Castle.DynamicProxy.ByRefLikeReference reference, void* expectedPtr) { }
+        [System.CLSCompliant(false)]
+        public static unsafe void* GetRawPtr(Castle.DynamicProxy.ByRefLikeReference reference, System.Type expectedType) { }
     }
     public class ByRefLikeReference<TByRefLike> : Castle.DynamicProxy.ByRefLikeReference
         where TByRefLike :  struct
     {
-        [System.CLSCompliant(false)]
-        public ByRefLikeReference(System.Type type, void* ptr, bool valueIsScoped) { }
         public TByRefLike GetValue() { }
         public void SetValue(Castle.DynamicProxy.ByRefLikeReference<TByRefLike>.ValueGetter valueGetter) { }
         public void UseValue(Castle.DynamicProxy.ByRefLikeReference<TByRefLike>.ValueConsumer valueConsumer) { }
@@ -2723,16 +2731,8 @@ namespace Castle.DynamicProxy
         public static bool IsProxy(object? instance) { }
         public static bool IsProxyType(System.Type type) { }
     }
-    public class ReadOnlySpanReference<T> : Castle.DynamicProxy.ByRefLikeReference<System.ReadOnlySpan<T>>
-    {
-        [System.CLSCompliant(false)]
-        public ReadOnlySpanReference(System.Type type, void* ptr, bool valueIsScoped) { }
-    }
-    public class SpanReference<T> : Castle.DynamicProxy.ByRefLikeReference<System.Span<T>>
-    {
-        [System.CLSCompliant(false)]
-        public SpanReference(System.Type type, void* ptr, bool valueIsScoped) { }
-    }
+    public class ReadOnlySpanReference<T> : Castle.DynamicProxy.ByRefLikeReference<System.ReadOnlySpan<T>> { }
+    public class SpanReference<T> : Castle.DynamicProxy.ByRefLikeReference<System.Span<T>> { }
     public class StandardInterceptor : Castle.DynamicProxy.IInterceptor
     {
         public StandardInterceptor() { }
