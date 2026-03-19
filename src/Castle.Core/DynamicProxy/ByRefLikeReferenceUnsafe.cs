@@ -70,6 +70,14 @@ public static class ByRefLikeReferenceUnsafe
 	{
 		reference.Dispose(expectedPtr);
 	}
+
+	/// <summary>
+	/// Returns information if argument value has `scoped` lifetime 
+	/// </summary>
+	public static bool IsReferenceValueScoped(ByRefLikeReference reference)
+	{
+		return reference.ValueIsScoped;
+	}
 }
 
 #endif

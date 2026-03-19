@@ -2422,10 +2422,7 @@ namespace Castle.DynamicProxy
         public virtual void NonProxyableMemberNotification(System.Type type, System.Reflection.MemberInfo memberInfo) { }
         public virtual bool ShouldInterceptMethod(System.Type type, System.Reflection.MethodInfo methodInfo) { }
     }
-    public class ByRefLikeReference
-    {
-        public bool ValueIsScoped { get; }
-    }
+    public class ByRefLikeReference { }
     public static class ByRefLikeReferenceUnsafe
     {
         [System.CLSCompliant(false)]
@@ -2438,6 +2435,7 @@ namespace Castle.DynamicProxy
         public static unsafe void DisposeReference(Castle.DynamicProxy.ByRefLikeReference reference, void* expectedPtr) { }
         [System.CLSCompliant(false)]
         public static unsafe void* GetRawPtr(Castle.DynamicProxy.ByRefLikeReference reference, System.Type expectedType) { }
+        public static bool IsReferenceValueScoped(Castle.DynamicProxy.ByRefLikeReference reference) { }
     }
     public class CustomAttributeInfo : System.IEquatable<Castle.DynamicProxy.CustomAttributeInfo>
     {

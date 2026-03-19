@@ -87,8 +87,8 @@ namespace Castle.DynamicProxy
 		private void* ptr;
 
 		private Thread ownerThread;
-		
-		public bool ValueIsScoped { get; }
+
+		internal bool ValueIsScoped { get; }
 
 		internal ByRefLikeReference(Type type, void* ptr, bool valueIsScoped)
 		{
