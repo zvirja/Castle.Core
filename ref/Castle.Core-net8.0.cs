@@ -2704,7 +2704,6 @@ namespace Castle.DynamicProxy
     {
         [System.CLSCompliant(false)]
         public ReadOnlySpanReference(System.Type type, void* ptr, bool valueIsScoped) { }
-        public System.ReadOnlySpan<>& Value { get; }
         public System.ReadOnlySpan<T> GetValue() { }
         public void SetValue(Castle.DynamicProxy.ReadOnlySpanReference<T>.ValueGetter valueGetter) { }
         public void UseValue(Castle.DynamicProxy.ReadOnlySpanReference<T>.ValueConsumer valueConsumer) { }
@@ -2717,7 +2716,6 @@ namespace Castle.DynamicProxy
     {
         [System.CLSCompliant(false)]
         public SpanReference(System.Type type, void* ptr, bool valueIsScoped) { }
-        public System.Span<>& Value { get; }
         public System.Span<T> GetValue() { }
         public void SetValue(Castle.DynamicProxy.SpanReference<T>.ValueGetter valueGetter) { }
         public void UseValue(Castle.DynamicProxy.SpanReference<T>.ValueConsumer valueConsumer) { }

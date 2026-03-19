@@ -197,7 +197,7 @@ namespace Castle.DynamicProxy
 			}
 		}
 
-		public ref TByRefLike Value
+		private ref TByRefLike Value
 		{
 			get
 			{
@@ -274,7 +274,7 @@ namespace Castle.DynamicProxy
 		}
 
 #if !NET9_0_OR_GREATER
-		public ref ReadOnlySpan<T> Value
+		private ref ReadOnlySpan<T> Value
 		{
 			get
 			{
@@ -351,7 +351,7 @@ namespace Castle.DynamicProxy
 		}
 
 #if !NET9_0_OR_GREATER
-		public ref Span<T> Value
+		private ref Span<T> Value
 		{
 			get
 			{

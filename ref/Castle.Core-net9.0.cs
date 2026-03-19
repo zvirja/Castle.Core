@@ -2437,7 +2437,6 @@ namespace Castle.DynamicProxy
     {
         [System.CLSCompliant(false)]
         public ByRefLikeReference(System.Type type, void* ptr, bool valueIsScoped) { }
-        public TByRefLike& Value { get; }
         public TByRefLike GetValue() { }
         public void SetValue(Castle.DynamicProxy.ByRefLikeReference<TByRefLike>.ValueGetter valueGetter) { }
         public void UseValue(Castle.DynamicProxy.ByRefLikeReference<TByRefLike>.ValueConsumer valueConsumer) { }
