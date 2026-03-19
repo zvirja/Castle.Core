@@ -122,13 +122,6 @@ namespace Castle.DynamicProxy
 				throw new ArgumentException($"The reference type {type.FullName} does not match the expected type {checkType.FullName}");
 			}
 
-			return GetPtrNocheck();
-		}
-
-		internal void* GetPtrNocheck()
-		{
-			AssertCurrentThread();
-			
 			if (this.ptr == null)
 			{
 				throw new ObjectDisposedException("This reference was already invalidated");
@@ -200,7 +193,7 @@ namespace Castle.DynamicProxy
 		{
 			get
 			{
-				return ref *(TByRefLike*)GetPtrNocheck();
+				return ref *(TByRefLike*)GetPtr(typeof(TByRefLike));
 			}
 		}
 	}
@@ -246,7 +239,7 @@ namespace Castle.DynamicProxy
 		{
 			get
 			{
-				return ref *(ReadOnlySpan<T>*)GetPtrNocheck();
+				return ref *(ReadOnlySpan<T>*)GetPtr(typeof(ReadOnlySpan<T>));
 			}
 		}
 #endif
@@ -292,7 +285,7 @@ namespace Castle.DynamicProxy
 		{
 			get
 			{
-				return ref *(Span<T>*)GetPtrNocheck();
+				return ref *(Span<T>*)GetPtr(typeof(Span<T>));
 			}
 		}
 #endif
