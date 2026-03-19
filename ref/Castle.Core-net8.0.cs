@@ -2705,12 +2705,26 @@ namespace Castle.DynamicProxy
         [System.CLSCompliant(false)]
         public ReadOnlySpanReference(System.Type type, void* ptr, bool valueIsScoped) { }
         public System.ReadOnlySpan<>& Value { get; }
+        public System.ReadOnlySpan<T> GetValue() { }
+        public void SetValue(Castle.DynamicProxy.ReadOnlySpanReference<T>.ValueGetter valueGetter) { }
+        public void UseValue(Castle.DynamicProxy.ReadOnlySpanReference<T>.ValueConsumer valueConsumer) { }
+        public TResult UseValue<TResult>(Castle.DynamicProxy.ReadOnlySpanReference<T>.ValueConsumerWithResult<TResult> valueConsumer) { }
+        public delegate void ValueConsumer<T>([System.Runtime.CompilerServices.ScopedRef] System.ReadOnlySpan<T> value);
+        public delegate TResult ValueConsumerWithResult<T, TResult>([System.Runtime.CompilerServices.ScopedRef] System.ReadOnlySpan<T> value);
+        public delegate System.ReadOnlySpan<T> ValueGetter<T>();
     }
     public class SpanReference<T> : Castle.DynamicProxy.ByRefLikeReference
     {
         [System.CLSCompliant(false)]
         public SpanReference(System.Type type, void* ptr, bool valueIsScoped) { }
         public System.Span<>& Value { get; }
+        public System.Span<T> GetValue() { }
+        public void SetValue(Castle.DynamicProxy.SpanReference<T>.ValueGetter valueGetter) { }
+        public void UseValue(Castle.DynamicProxy.SpanReference<T>.ValueConsumer valueConsumer) { }
+        public TResult UseValue<TResult>(Castle.DynamicProxy.SpanReference<T>.ValueConsumerWithResult<TResult> valueConsumer) { }
+        public delegate void ValueConsumer<T>([System.Runtime.CompilerServices.ScopedRef] System.Span<T> value);
+        public delegate TResult ValueConsumerWithResult<T, TResult>([System.Runtime.CompilerServices.ScopedRef] System.Span<T> value);
+        public delegate System.Span<T> ValueGetter<T>();
     }
     public class StandardInterceptor : Castle.DynamicProxy.IInterceptor
     {

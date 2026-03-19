@@ -2438,6 +2438,13 @@ namespace Castle.DynamicProxy
         [System.CLSCompliant(false)]
         public ByRefLikeReference(System.Type type, void* ptr, bool valueIsScoped) { }
         public TByRefLike& Value { get; }
+        public TByRefLike GetValue() { }
+        public void SetValue(Castle.DynamicProxy.ByRefLikeReference<TByRefLike>.ValueGetter valueGetter) { }
+        public void UseValue(Castle.DynamicProxy.ByRefLikeReference<TByRefLike>.ValueConsumer valueConsumer) { }
+        public TResult UseValue<TResult>(Castle.DynamicProxy.ByRefLikeReference<TByRefLike>.ValueConsumerWithResult<TResult> valueConsumer) { }
+        public delegate void ValueConsumer<TByRefLike>([System.Runtime.CompilerServices.ScopedRef] TByRefLike value);
+        public delegate TResult ValueConsumerWithResult<TByRefLike, TResult>([System.Runtime.CompilerServices.ScopedRef] TByRefLike value);
+        public delegate TByRefLike ValueGetter<TByRefLike>();
     }
     public class CustomAttributeInfo : System.IEquatable<Castle.DynamicProxy.CustomAttributeInfo>
     {

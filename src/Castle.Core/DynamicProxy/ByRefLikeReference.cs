@@ -63,6 +63,14 @@ namespace Castle.DynamicProxy
 	//    so we should apply more strict rules on how we expose the value.
 	//    Dynamic generator analyzes method signature and provides the correct value for us.
 	//
+	// *) We always return a copy of the original value and never expose the value by reference.
+	//    This is important to make sure that we prevent scenario of `ref struct` interior mutability
+	//    and providing a potential way to leak scoped values out of their lifetime scope.
+	//
+	// *) The SetValue() function uses delegate to get the value. This is required to make sure that local variables
+	//    or variables with scoped visibility are not promoted outside their lifetime.
+	//    When we have delegate, we could only use heap-backed values and compiler will enforce the safety for us.
+	//
 	// *) Finally, we allow accessing reference data from the owning thread only to avoid all possible concurrency-related issues.
 	//
 	// As far as I can reason, `ByRefLikeReference` et al. should be safe to use IFF they are never copied out from an
@@ -196,6 +204,37 @@ namespace Castle.DynamicProxy
 				return ref *(TByRefLike*)GetPtr(typeof(TByRefLike));
 			}
 		}
+		
+		public TByRefLike GetValue()
+		{
+			if (ValueIsScoped)
+			{
+				throw new InvalidOperationException($"Use {nameof(UseValue)} method for scoped arguments");
+			}
+			
+			return Value;
+		}
+
+		public void SetValue(ValueGetter valueGetter)
+		{
+			Value = valueGetter.Invoke();
+		}
+
+		public void UseValue(ValueConsumer valueConsumer)
+		{
+			valueConsumer.Invoke(Value);
+		}
+		
+		public TResult UseValue<TResult>(ValueConsumerWithResult<TResult> valueConsumer) where TResult : allows ref struct
+		{
+			return valueConsumer.Invoke(Value);
+		}
+		
+		public delegate TResult ValueConsumerWithResult<TResult>(scoped TByRefLike value) where TResult : allows ref struct;
+		
+		public delegate void ValueConsumer(scoped TByRefLike value);
+		
+		public delegate TByRefLike ValueGetter();
 	}
 #endif
 
@@ -242,6 +281,37 @@ namespace Castle.DynamicProxy
 				return ref *(ReadOnlySpan<T>*)GetPtr(typeof(ReadOnlySpan<T>));
 			}
 		}
+		
+		public ReadOnlySpan<T> GetValue()
+		{
+			if (ValueIsScoped)
+			{
+				throw new InvalidOperationException($"Use {nameof(UseValue)} method for scoped arguments");
+			}
+			
+			return Value;
+		}
+
+		public void SetValue(ValueGetter valueGetter)
+		{
+			Value = valueGetter.Invoke();
+		}
+
+		public void UseValue(ValueConsumer valueConsumer)
+		{
+			valueConsumer.Invoke(Value);
+		}
+		
+		public TResult UseValue<TResult>(ValueConsumerWithResult<TResult> valueConsumer)
+		{
+			return valueConsumer.Invoke(Value);
+		}
+
+		public delegate TResult ValueConsumerWithResult<TResult>(scoped ReadOnlySpan<T> value);
+		
+		public delegate void ValueConsumer(scoped ReadOnlySpan<T> value);
+		
+		public delegate ReadOnlySpan<T> ValueGetter();
 #endif
 	}
 
@@ -288,6 +358,37 @@ namespace Castle.DynamicProxy
 				return ref *(Span<T>*)GetPtr(typeof(Span<T>));
 			}
 		}
+		
+		public Span<T> GetValue()
+		{
+			if (ValueIsScoped)
+			{
+				throw new InvalidOperationException($"Use {nameof(UseValue)} method for scoped arguments");
+			}
+			
+			return Value;
+		}
+
+		public void SetValue(ValueGetter valueGetter)
+		{
+			Value = valueGetter.Invoke();
+		}
+
+		public void UseValue(ValueConsumer valueConsumer)
+		{
+			valueConsumer.Invoke(Value);
+		}
+		
+		public TResult UseValue<TResult>(ValueConsumerWithResult<TResult> valueConsumer)
+		{
+			return valueConsumer.Invoke(Value);
+		}
+
+		public delegate TResult ValueConsumerWithResult<TResult>(scoped Span<T> value);
+		
+		public delegate void ValueConsumer(scoped Span<T> value);
+		
+		public delegate Span<T> ValueGetter();
 #endif
 	}
 }
